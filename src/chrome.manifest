@@ -1,0 +1,4 @@
+# chrome.manifest for development
+content oak-formatters  content/
+
+overlay chrome://selenium-ide/content/selenium-ide-overlay.xul chrome://oak-formatters/content/formats/format-loader.xul
