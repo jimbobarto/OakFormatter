@@ -5,6 +5,11 @@
  * @param source The source to parse
  */
 function parse(testCase, source) {
+  var commands = parseCommandFromSource(source);
+  testCase.setCommands(commands);
+}
+
+function parseCommandFromSource(source) {
   var doc = source;
   var commands = [];
   while (doc.length > 0) {
@@ -19,7 +24,8 @@ function parse(testCase, source) {
     }
     doc = doc.substr(line[0].length);
   }
-  testCase.setCommands(commands);
+
+  return commands;
 }
 
 /**
@@ -39,13 +45,77 @@ function format(testCase, name) {
  * @param The array of commands to sort.
  */
 function formatCommands(commands) {
-  var result = '';
+  var result = '[';
   for (var i = 0; i < commands.length; i++) {
     var command = commands[i];
-    if (command.type == 'command') {
-        result += command.command + ',' + command.target + ',' +  command.value + "\n";
-    }
+    var element = '{';
+    element = buildElement(element, command);
+    element += '}';
+
+    result = addToStringList(result, '[', element)
   }
+  result += ']';
   return result; 
 }
 
+function addToStringList(existingString, startString, newString) {
+  if (existingString == startString) {
+    existingString += newString;
+  }
+  else {
+    existingString += ',' + newString;
+  }
+
+  return existingString;
+}
+
+function buildElement(jsonString, command) {
+  jsonString = addJsonPair(jsonString, 'interaction', command.command);
+
+  if (command.target.indexOf('=') > -1) {
+    var interactionData = command.target.split('=');
+    jsonString = addJsonPair(jsonString, 'identifierType', interactionData[0]);
+    jsonString = addJsonPair(jsonString, 'identifier', interactionData[1]);
+  }
+  else {
+    jsonString = addJsonPair(jsonString, 'identifier', command.target);
+  }
+
+  if (command.value) {
+    jsonString = addJsonPair(jsonString, 'value', command.value);
+  }
+
+  return jsonString;
+}
+
+function addJsonPair(jsonString, key, value) {
+  var pairString = createJsonPair(key, value);
+  jsonString = addToStringList(jsonString, '{', pairString);
+
+  return jsonString;
+}
+
+function createJsonPair(key, value) {
+  var jsonPair = '"' + key + '": "' + value + '"';
+  return jsonPair;
+}
+
+function test() {
+  var commands = [];
+  var firstCommand = {};
+  firstCommand.command = 'open';
+  firstCommand.target = '/news';
+  commands.push(firstCommand);
+
+  var secondCommand = {};
+  secondCommand.command = 'clickAndWait';
+  secondCommand.target = 'css=span.title-link__title-text';
+  commands.push(secondCommand);
+
+  var thirdCommand = {};
+  thirdCommand.command = 'clickAndWait';
+  thirdCommand.target = 'link=Sport';
+  commands.push(thirdCommand);
+
+  alert("Final: " + formatCommands(commands));
+}
