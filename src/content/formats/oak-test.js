@@ -35,7 +35,30 @@ function parseCommandFromSource(source) {
  * @param name The name of the test case, if any. It may be used to embed title into the source.
  */
 function format(testCase, name) {
-  return formatCommands(testCase.commands); 
+  var overallTest = buildTest(testCase, name);
+
+  return JSON.stringify(overallTest);
+}
+
+function buildTest(testCase, name) {
+  var overallTest = {};
+
+  overallTest.name = new Date().getTime();
+  if (name) {
+    overallTest.name = name;
+  }
+
+  if (testCase.baseURL) {
+    overallTest.url = testCase.baseURL;
+  }
+  overallTest.pages = [];
+
+  var newPage = {};
+  newPage.name = '1';
+  newPage.elements = formatCommands(testCase.commands);
+  overallTest.pages.push(newPage);
+
+  return overallTest;
 }
 
 /**
@@ -45,16 +68,13 @@ function format(testCase, name) {
  * @param The array of commands to sort.
  */
 function formatCommands(commands) {
-  var result = '[';
+  var result = [];
   for (var i = 0; i < commands.length; i++) {
     var command = commands[i];
-    var element = '{';
+    var element = {};
     element = buildElement(element, command);
-    element += '}';
-
-    result = addToStringList(result, '[', element)
+    result.push(element);
   }
-  result += ']';
   return result; 
 }
 
@@ -69,38 +89,39 @@ function addToStringList(existingString, startString, newString) {
   return existingString;
 }
 
-function buildElement(jsonString, command) {
-  jsonString = addJsonPair(jsonString, 'interaction', command.command);
+function buildElement(jsonParent, command) {
+  jsonParent = addJsonPair(jsonParent, 'interaction', command.command);
 
   if (command.target.indexOf('=') > -1) {
     var interactionData = command.target.split('=');
-    jsonString = addJsonPair(jsonString, 'identifierType', interactionData[0]);
-    jsonString = addJsonPair(jsonString, 'identifier', interactionData[1]);
+    jsonParent = addJsonPair(jsonParent, 'identifierType', interactionData[0]);
+    jsonParent = addJsonPair(jsonParent, 'identifier', interactionData[1]);
   }
   else {
-    jsonString = addJsonPair(jsonString, 'identifier', command.target);
+    jsonParent = addJsonPair(jsonParent, 'identifier', command.target);
   }
 
   if (command.value) {
-    jsonString = addJsonPair(jsonString, 'value', command.value);
+    jsonParent = addJsonPair(jsonParent, 'value', command.value);
   }
 
-  return jsonString;
+  return jsonParent;
 }
 
-function addJsonPair(jsonString, key, value) {
-  var pairString = createJsonPair(key, value);
-  jsonString = addToStringList(jsonString, '{', pairString);
+function addJsonPair(jsonParent, key, value) {
+  jsonParent[key] = value;
 
-  return jsonString;
+  return jsonParent;
 }
 
+/*
 function createJsonPair(key, value) {
   var jsonPair = '"' + key + '": "' + value + '"';
   return jsonPair;
 }
+*/
 
-function test() {
+function localTest() {
   var commands = [];
   var firstCommand = {};
   firstCommand.command = 'open';
@@ -117,5 +138,10 @@ function test() {
   thirdCommand.target = 'link=Sport';
   commands.push(thirdCommand);
 
-  alert("Final: " + formatCommands(commands));
+  var testObject = {};
+  testObject.name = 'test';
+  //var jsonObject = JSON.parse(testObject);
+  alert("Json: " + JSON.stringify(testObject));
+
+  alert("Final: " + JSON.stringify(formatCommands(commands)));
 }
