@@ -56,6 +56,15 @@ function buildTest(testCase, name) {
   var newPage = {};
   newPage.name = '1';
   newPage.elements = formatCommands(testCase.commands);
+  if (newPage.elements[0].interaction == 'open') {
+    newPage.uri = newPage.elements[0].identifier;
+    newPage.elements.splice(0, 1);
+  }
+
+  for (var i = 0; i < newPage.elements.length; i++) {
+    newPage.elements[i].name = newPage.name + '_' + i;
+  }
+
   overallTest.pages.push(newPage);
 
   return overallTest;
@@ -91,6 +100,7 @@ function addToStringList(existingString, startString, newString) {
 
 function buildElement(jsonParent, command) {
   jsonParent = addJsonPair(jsonParent, 'interaction', command.command);
+  jsonParent = addJsonPair(jsonParent, 'type', getType(command.command));
 
   if (command.target.indexOf('=') > -1) {
     var interactionData = command.target.split('=');
@@ -112,6 +122,17 @@ function addJsonPair(jsonParent, key, value) {
   jsonParent[key] = value;
 
   return jsonParent;
+}
+
+function getType(command) {
+  if (command == 'open') {
+    return 'browser';
+  }
+  if (command == 'clickAndWait') {
+    return 'generic';
+  }
+
+  return 'generic';
 }
 
 /*
