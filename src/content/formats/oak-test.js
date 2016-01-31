@@ -103,7 +103,7 @@ function buildElement(jsonParent, command) {
   jsonParent = addJsonPair(jsonParent, 'type', getType(command.command));
 
   if (command.target.indexOf('=') > -1) {
-    var interactionData = command.target.split('=');
+    var interactionData = splitString(command.target);
     jsonParent = addJsonPair(jsonParent, 'identifierType', interactionData[0]);
     jsonParent = addJsonPair(jsonParent, 'identifier', interactionData[1]);
   }
@@ -112,10 +112,21 @@ function buildElement(jsonParent, command) {
   }
 
   if (command.value) {
-    jsonParent = addJsonPair(jsonParent, 'value', command.value);
+    if (command.command == 'select') {
+      var valueData = splitString(command.value);
+      jsonParent = addJsonPair(jsonParent, 'value', valueData[1]);
+      jsonParent = addJsonPair(jsonParent, 'selectBy', valueData[0]);
+    }
+    else {
+      jsonParent = addJsonPair(jsonParent, 'value', command.value);
+    }
   }
 
   return jsonParent;
+}
+
+function splitString(string) {
+  return string.split('=');
 }
 
 function addJsonPair(jsonParent, key, value) {
@@ -130,6 +141,9 @@ function getType(command) {
   }
   if (command == 'clickAndWait') {
     return 'generic';
+  }
+  if (command == 'select') {
+    return 'select';
   }
 
   return 'generic';
