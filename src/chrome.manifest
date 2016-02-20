@@ -2,3 +2,5 @@
 content oak-formatters  content/
 
 overlay chrome://selenium-ide/content/selenium-ide-overlay.xul chrome://oak-formatters/content/formats/format-loader.xul
+
+overlay chrome://selenium-ide/content/selenium-ide.xul chrome://oak-formatters/content/view/toolbarOverlay.xul

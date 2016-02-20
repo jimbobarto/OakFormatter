@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://oak-formatters/content/view/toolbar.css" type="text/css"?>
+ 
+<overlay id="toolbar_overlay" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+    <toolbar id="toolbar2">
+        <toolbarseparator id="oak-formatters-separator" insertafter="record-button"/>
+        <toolbarbutton id="oak-formatters-button" insertafter="oak-formatters-separator" label="Export test" class="icon" tooltiptext="Export test" oncommand="window.editor.exportTestCaseWithFormat(window.editor.app.getFormats().selectFormat('oaktestformatter'))"/>
+    </toolbar>
+</overlay>

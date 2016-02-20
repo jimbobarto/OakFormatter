@@ -14,6 +14,8 @@ rm -rf $TMP_DIR
 mkdir -p $TMP_DIR/content
  
 rsync -av --exclude=".*" src/content $TMP_DIR
+# rsync -av --exclude=".*" src/locale $TMP_DIR
+
 cp -v src/install.rdf $TMP_DIR
 cp -v src/chrome.manifest $TMP_DIR
  
