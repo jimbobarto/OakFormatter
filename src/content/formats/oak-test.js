@@ -53,21 +53,38 @@ function buildTest(testCase, name) {
   }
   overallTest.pages = [];
 
-  var newPage = {};
-  newPage.name = '1';
-  newPage.elements = formatCommands(testCase.commands);
-  if (newPage.elements[0].interaction == 'open') {
-    newPage.uri = newPage.elements[0].identifier;
-    newPage.elements.splice(0, 1);
+  var allElements = formatCommands(testCase.commands);
+
+  var newPage = createNewPage(1);
+  if (allElements[0].interaction == 'open') {
+    newPage.uri = allElements[0].identifier;
+    allElements.splice(0, 1);
   }
 
-  for (var i = 0; i < newPage.elements.length; i++) {
-    newPage.elements[i].name = newPage.name + '_' + i;
+  var elementCounter = 1;
+  for (var i = 0; i < allElements.length; i++) {
+    allElements[i].name = newPage.name + '_' + elementCounter;
+    elementCounter++;
+    newPage.elements.push(allElements[i]);
+
+    if (allElements[i].interaction == 'clickAndWait') {
+      overallTest.pages.push(newPage);
+
+      newPage = createNewPage(newPage.name + 1);
+      elementCounter = 1;
+    }
   }
 
-  overallTest.pages.push(newPage);
+  if (newPage.elements.length > 0 || newPage.hasOwnProperty("uri")) {
+    overallTest.pages.push(newPage);
+  }
 
   return overallTest;
+}
+
+function createNewPage(newPageName) {
+  var newPage = {name: newPageName, elements: []};
+  return newPage;
 }
 
 /**
@@ -98,35 +115,36 @@ function addToStringList(existingString, startString, newString) {
   return existingString;
 }
 
-function buildElement(jsonParent, command) {
-  jsonParent = addJsonPair(jsonParent, 'interaction', command.command);
-  jsonParent = addJsonPair(jsonParent, 'type', getType(command.command));
+function buildElement(elementJson, command) {
+  elementJson = addJsonPair(elementJson, 'interaction', command.command);
+  elementJson = addJsonPair(elementJson, 'type', getType(command.command));
 
   if (command.target.indexOf('=') > -1) {
     var interactionData = splitString(command.target);
-    jsonParent = addJsonPair(jsonParent, 'identifierType', interactionData[0]);
-    jsonParent = addJsonPair(jsonParent, 'identifier', interactionData[1]);
+    elementJson = addJsonPair(elementJson, 'identifierType', interactionData[0]);
+    elementJson = addJsonPair(elementJson, 'identifier', interactionData[1]);
   }
   else {
-    jsonParent = addJsonPair(jsonParent, 'identifier', command.target);
+    elementJson = addJsonPair(elementJson, 'identifier', command.target);
   }
 
   if (command.value) {
     if (command.command == 'select') {
       var valueData = splitString(command.value);
-      jsonParent = addJsonPair(jsonParent, 'value', valueData[1]);
-      jsonParent = addJsonPair(jsonParent, 'selectBy', valueData[0]);
+      elementJson = addJsonPair(elementJson, 'value', valueData[1]);
+      elementJson = addJsonPair(elementJson, 'selectBy', valueData[0]);
     }
     else {
-      jsonParent = addJsonPair(jsonParent, 'value', command.value);
+      elementJson = addJsonPair(elementJson, 'value', command.value);
     }
   }
 
-  return jsonParent;
+  return elementJson;
 }
 
 function splitString(string) {
-  return string.split('=');
+  var firstEqualsLocation = string.indexOf('=');
+  return [string.substring(0, firstEqualsLocation), string.substring(firstEqualsLocation + 1)];
 }
 
 function addJsonPair(jsonParent, key, value) {
@@ -180,3 +198,7 @@ function localTest() {
 
   alert("Final: " + JSON.stringify(formatCommands(commands)));
 }
+
+this.options = {
+  defaultExtension: "json"
+};
